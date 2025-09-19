@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Panel } from '../../components/Panel';
 import { StepController } from '../../components/StepController';
 import { TwoLineVisualizer } from '../../components/TwoLineVisualizer';
@@ -16,7 +16,6 @@ type Props = {
 };
 
 export default function VisualizersPanel({ n, wasm, e, d, vizTotal, vizStep, setVizStep, vizPlaying, setVizPlaying, vizSpeed, setVizSpeed, vizWidth }: Props) {
-  const [showDetail, setShowDetail] = useState(false);
   // Precompute mapping pairs for small n to power the math explanation box.
   const pairs = useMemo(() => {
     try {
@@ -32,32 +31,6 @@ export default function VisualizersPanel({ n, wasm, e, d, vizTotal, vizStep, set
   }, [wasm, n, e, vizTotal]);
   const linkCount = Math.max(0, Math.min(pairs.length, typeof vizStep === 'number' ? Math.floor(vizStep) : pairs.length));
   const current = linkCount > 0 ? pairs[linkCount - 1] : null;
-  // Build square-and-multiply breakdown for the current i (detail mode)
-  const detail = useMemo(() => {
-    if (!n || !current) return [] as Array<string>;
-    try {
-      const N = BigInt(n);
-      const base0 = BigInt(current.i);
-      let acc = 1n;
-      let base = base0 % N;
-      let ee = BigInt(e);
-      const steps: string[] = [];
-      while (ee > 0n) {
-        if ((ee & 1n) === 1n) {
-          const before = acc;
-          acc = (acc * base) % N;
-          steps.push(`${before} × ${base} ≡ ${acc} (mod ${n})`);
-        }
-        const beforeB = base;
-        base = (base * base) % N;
-        steps.push(`${beforeB}² ≡ ${base} (mod ${n})`);
-        ee >>= 1n;
-      }
-      // final congruence
-      steps.push(`${current.i}^${e} ≡ ${current.j} (mod ${n})`);
-      return steps;
-    } catch { return [] as Array<string>; }
-  }, [current, e, n]);
 
   return (
     <Panel title="Visualizers" subtitle="Explore mappings across all residues.">
@@ -69,22 +42,7 @@ export default function VisualizersPanel({ n, wasm, e, d, vizTotal, vizStep, set
       )}
       {n && BigInt(n) <= 323n && (
         <div>
-          <div className="border-b border-[var(--ui-border)] mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs text-[var(--ui-muted)]">
-              <button
-                onClick={()=>setShowDetail(!showDetail)}
-                aria-pressed={showDetail}
-                className={`inline-flex items-center h-7 px-3 rounded-full text-xs font-medium transition-colors ${
-                  showDetail
-                    ? 'bg-[var(--ui-accent)] text-white hover:bg-[var(--ui-accent)]/90'
-                    : 'bg-[var(--ui-surface-2)] text-[var(--ui-muted)] hover:bg-[var(--ui-surface-3)]'
-                }`}
-                title="Toggle detail view"
-                aria-label="Toggle square-and-multiply detail"
-              >
-                {showDetail ? 'Detail' : 'Detail'}
-              </button>
-            </div>
+          <div className="border-b border-[var(--ui-border)] mb-3 flex items-center justify-end">
             <div className="flex items-center gap-3 text-xs text-[var(--ui-muted)]">
               <StepController
                 total={vizTotal}
@@ -118,24 +76,21 @@ export default function VisualizersPanel({ n, wasm, e, d, vizTotal, vizStep, set
             )}
           </div>
           {/* history (always on) and optional detail */}
-          {linkCount > 0 && (
+          {linkCount > 1 && (
             <div className="mt-2 text-sm font-mono text-[var(--ui-muted)]">
-              {Array.from({length: Math.min(3, linkCount)}).map((_, idx)=>{
-                const k = linkCount - 1 - idx; const s = pairs[k]!;
-                return (
-                  <div key={`h${k}`}>{s.i}^{e} mod {n} = <span className="text-[var(--ui-text)]">{s.j}</span></div>
-                );
-              })}
+              <div className="text-xs mb-1">Previous results</div>
+              <div className="max-h-32 overflow-y-auto pr-2 space-y-0.5">
+                {Array.from({length: Math.min(10, linkCount - 1)}).map((_, idx)=>{
+                  const k = linkCount - 2 - idx; // exclude current
+                  const s = pairs[k]!;
+                  return (
+                    <div key={`h${k}`}>{s.i}^{e} mod {n} = <span className="text-[var(--ui-text)]">{s.j}</span></div>
+                  );
+                })}
+              </div>
             </div>
           )}
-          {showDetail && detail.length > 0 && (
-            <div className="mt-2 rounded-md border border-[var(--ui-border)] bg-[var(--ui-surface)] px-3 py-2 text-sm font-mono text-[var(--ui-text)]">
-              <div className="text-xs text-[var(--ui-muted)] mb-1">Square-and-multiply</div>
-              <ul className="list-disc pl-4">
-                {detail.map((line, i)=>(<li key={`d${i}`}>{line}</li>))}
-              </ul>
-            </div>
-          )}
+          {/* square-and-multiply detail removed by request */}
         </div>
       )}
     </Panel>
