@@ -26,32 +26,27 @@ An educational RSA visualizer with a Rust/WASM core and a modern Next.js UI. All
 If the WASM package isn’t present, the UI falls back to a tiny JS stub so you can still load the page.
 
 ## RSA in a nutshell (math)
-1. Pick primes p ≠ q and define
 
-	$n = p\,q$.
+1. Pick primes $p \neq q$ and define
+
+   $$n = p q.$$
 
 2. Compute a totient-like modulus (two common choices):
 
-	$\varphi(n) = (p-1)(q-1)$, or
+   $$\varphi(n) = (p-1)(q-1), \quad \lambda(n) = \mathrm{lcm}(p-1, q-1).$$
 
-	$\lambda(n) = \operatorname{lcm}(p-1, q-1)$.
+3. Choose $e$ with $\gcd(e, T) = 1$ where $T \in \{\varphi(n), \lambda(n)\}$, and compute
 
-3. Choose $e$ with $\gcd(e, T) = 1$ where $T \in \{\varphi(n),\lambda(n)\}$, and compute
-
-	$d \equiv e^{-1} \pmod{T}$.
+   $$d \equiv e^{-1} \pmod{T}.$$
 
 4. Encryption and decryption for a message $m \in \{0,\dots,n-1\}$ are
 
-	$c \equiv m^{e} \pmod{n}$,\quad $m \equiv c^{d} \pmod{n}$.
+   $$c \equiv m^{e} \pmod{n}, \quad m \equiv c^{d} \pmod{n}.$$
 
 The equalities follow from Euler’s/Fermat’s theorems and the Chinese Remainder Theorem.
 
-FAQ: Is $\gcd(e,\varphi(n))$ (or $\gcd(e,\lambda(n))$) always 1?
-- No. You must choose $e$ so that it is coprime to the totient modulus (either $\varphi(n)$ or $\lambda(n)$). The app (Rust core) enforces this by adjusting $e$ or computing a valid pair $(e,d)$ when you enter $p,q$.
-
 ## Notes
 - This is for learning and visualization only. The parameters are intentionally tiny and insecure.
-- The visualizers auto‑pause when a sweep finishes; use Play to run again.
 
 ## License
 Apache-2.0
