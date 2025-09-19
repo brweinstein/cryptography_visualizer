@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  /* Modern, neutral palette */
+  --ui-bg: #0b0f14;           /* page background */
+  --ui-surface: #0f141b;      /* card/panel background */
+  --ui-surface-2: #131a22;    /* elevated/hover */
+  --ui-border: #1e2630;       /* borders */
+  --ui-text: #e6edf3;         /* primary text */
+  --ui-muted: #9aa5b1;        /* secondary text */
+  --ui-accent: #60a5fa;       /* accent (buttons, tabs) */
+  --ui-accent-contrast: #0b1220; /* contrast text on accent */
+  --ui-positive: #34d399;     /* success */
+  --ui-warning: #f59e0b;      /* warning */
+  --ui-danger: #f87171;       /* danger */
+}
+
+body {
+  background-color: var(--ui-bg);
+  color: var(--ui-text);
+}
+
+/* Base form elements */
+input[type="text"],
+input[type="number"],
+input[type="password"],
+input[type="search"],
+input[type="email"],
+textarea,
+select {
+  background-color: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  color: var(--ui-text);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ui-accent);
+}
+
+button {
+  color: var(--ui-text);
+}
