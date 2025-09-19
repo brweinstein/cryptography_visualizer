@@ -1,0 +1,29 @@
+[package]
+name = "rsa_wasm"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+serde = { version = "1.0", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
+console_error_panic_hook = { version = "0.1", optional = true }
+
+num-traits = "0.2"
+num-integer = "0.1"
+num-bigint = { version = "0.4", features = ["rand"] }
+js-sys = "0.3"
+
+rand = "0.8"
+rand_chacha = "0.3"
+getrandom = { version = "0.2", features = ["js"] }
+
+[dev-dependencies]
+# optional dev deps...
+
+[features]
+default = []
+console_error_panic_hook = ["dep:console_error_panic_hook"]

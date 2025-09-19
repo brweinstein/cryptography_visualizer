@@ -1,0 +1,61 @@
+### Node / Next.js
+node_modules/
+.next/
+.vercel/
+out/
+dist/
+coverage/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+### Editor/OS
+.DS_Store
+Thumbs.db
+.github/
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# Editor/Temp
+.*.swp
+.*.swo
+*~
+
+### Rust / Cargo
+target/
+**/target/
+**/*.rs.bk
+Cargo.lock
+
+### Wasm-pack output
+web/public/pkg/
+web/src/types/wasm-pack.d.ts
+
+### Env files
+.env
+.env.*
+
+### Misc caches
+.turbo/
+.cache/
+tmp/
+temp/
+
+### Lint/Build caches
+.eslintcache
+*.tsbuildinfo
+.nyc_output/
+
+### Duplicate safety (ensure not tracked anywhere else)
+/target
+node_modules
+.next
+out
+.vercel
+web/public/pkg
+.DS_Store
+.env
