@@ -2,6 +2,8 @@
 
 An educational RSA visualizer with a Rust/WASM core and a modern Next.js UI. All number theory and RSA math runs in Rust; the frontend is just UI and drawing.
 
+![usage](./corsa.gif)
+
 ## Tech stack
 - Core math: Rust, compiled to WebAssembly with wasm-bindgen
 - Web app: Next.js (App Router) + React + TypeScript
