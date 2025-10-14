@@ -6,12 +6,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className="min-h-screen bg-[var(--ui-bg)] text-[var(--ui-text)] flex flex-col">
-        <header className="sticky top-0 z-10 border-b border-[var(--ui-border)] bg-[var(--ui-bg)]/95 backdrop-blur">
-          <div className="mx-auto max-w-6xl px-4 h-14 flex items-center justify-between">
-            <Link className="font-semibold text-[var(--ui-accent)]" href="/">RSA Visualizer</Link>
-            <div className="text-xs text-[var(--ui-muted)]">Interactive RSA learning lab</div>
-          </div>
-        </header>
         <main className="mx-auto max-w-6xl px-4 py-6 flex-1 w-full">
           {children}
         </main>

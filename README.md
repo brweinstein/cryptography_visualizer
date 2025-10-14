@@ -1,54 +1,65 @@
-# Corsa
+## Cryptography Visualizer
 
-An educational RSA visualizer with a Rust/WASM core and a modern Next.js UI. All number theory and RSA math runs in Rust; the frontend is just UI and drawing.
+Small, interactive cryptography demos powered by Rust + WebAssembly and a Next.js UI.
+
+Features include:
+- RSA key generation and residue mapping visualizer
+- Diffie–Hellman key exchange walkthrough
+- AES round breakdown (toy), SHA‑256 stepper, and Discrete Log exploration
 
 ![usage](./corsa.gif)
 
-## Tech stack
-- Core math: Rust, compiled to WebAssembly with wasm-bindgen
-- Web app: Next.js (App Router) + React + TypeScript
-- Styling: Tailwind + small set of CSS custom properties
-- Tests: `cargo test` for Rust; Vitest/RTL for the web
+### Tech
+- Rust core compiled to WASM (wasm-bindgen)
+- Next.js 14, React 18, TypeScript, Tailwind CSS
+- Tests: `cargo test` (Rust), Vitest (web)
 
-## What it shows
-- Choose primes p and q (or auto-generate tiny ones). The app computes n = p·q and an RSA pair (e, d).
-- The visualizer maps residues i ↦ i^e mod n using a line-based view.
-- To keep it smooth, the visualizer only renders when n ≤ 323 (e.g., p=17 and q=19). You can still enter larger numbers to explore values in the panels.
-
-## Quick start
-1) Build the Rust → WASM module (one-time setup):
-	- Install wasm-pack:
-	  - Linux/macOS: `cargo install wasm-pack`
-	- Build to the web public folder:
-	  - From `web/`: `npm run -s wasm:build` (falls back to `wasm-pack build ../rust --target web --out-dir ./public/pkg --out-name rsa_wasm`)
-2) Install and run the web app:
+### Quick start
+1) Build the WASM bundle into the web app’s public path:
+	- Prereq: `cargo install wasm-pack`
+	- From `web/`: `npm run wasm:build`
+	  - Outputs to `web/public/pkg/`
+2) Start the web app:
 	- `cd web && npm install && npm run dev`
-3) Open http://localhost:3000
+	- Open http://localhost:3000
 
-If the WASM package isn’t present, the UI falls back to a tiny JS stub so you can still load the page.
+### Repository layout
+```
+.
+├── LICENSE-APACHE              # Apache 2.0 license
+├── README.md                   # Project overview and setup
+├── rust/                       # Rust crate (compiled to WebAssembly)
+│   ├── Cargo.toml              # Crate manifest
+│   └── src/
+│       ├── aes.rs              # AES (toy) visualization logic
+│       ├── diffie_hellman.rs   # Diffie–Hellman primitives
+│       ├── discrete_log.rs     # Discrete log (brute force, BSGS)
+│       ├── number_theory.rs    # GCD, modular arithmetic helpers
+│       ├── rsa.rs              # RSA helpers and small utilities
+│       ├── sha256.rs           # SHA-256 step visualization
+│       └── lib.rs              # wasm-bindgen exports and module wiring
+├── web/                        # Next.js app (UI)
+│   ├── package.json            # Web app scripts (wasm:build, dev, build)
+│   ├── public/
+│   │   ├── images/             # Static images used by the homepage
+│   │   └── pkg/                # wasm-pack output (ignored by git)
+│   └── src/
+│       ├── app/                # App Router pages
+│       │   ├── rsa/            # RSA page
+│       │   ├── diffie-hellman/ # DH page
+│       │   ├── aes/            # AES page
+│       │   ├── sha256/         # SHA-256 page
+│       │   └── discrete-log/   # Discrete log page
+│       ├── components/         # Shared UI (Panel, Navigation, visualizers)
+│       ├── lib/                # WASM loader (`wasm.ts`) and helpers
+│       ├── styles/             # Global styles (Tailwind + CSS vars)
+│       └── types/              # Type shims for wasm-pack bundle
+└── corsa.gif
+```
 
-## RSA in a nutshell (math)
+Notes:
+- WASM artifacts belong in `web/public/pkg/` and are git-ignored.
+- The app dynamically loads `/pkg/rsa_wasm.js` and `/pkg/rsa_wasm_bg.wasm` from that folder at runtime.
 
-1. Pick primes $p \neq q$ and define
-
-   $$n = p q.$$
-
-2. Compute a totient-like modulus (two common choices):
-
-   $$\varphi(n) = (p-1)(q-1), \quad \lambda(n) = \mathrm{lcm}(p-1, q-1).$$
-
-3. Choose $e$ with $\gcd(e, T) = 1$ where $T \in \{\varphi(n), \lambda(n)\}$, and compute
-
-   $$d \equiv e^{-1} \pmod{T}.$$
-
-4. Encryption and decryption for a message $m \in \{0,\dots,n-1\}$ are
-
-   $$c \equiv m^{e} \pmod{n}, \quad m \equiv c^{d} \pmod{n}.$$
-
-The equalities follow from Euler’s/Fermat’s theorems and the Chinese Remainder Theorem.
-
-## Notes
-- This is for learning and visualization only. The parameters are intentionally tiny and insecure.
-
-## License
+### License
 Apache-2.0

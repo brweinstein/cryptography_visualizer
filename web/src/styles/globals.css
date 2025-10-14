@@ -4,23 +4,44 @@
 
 :root {
   color-scheme: dark;
-  /* Modern, neutral palette */
-  --ui-bg: #0b0f14;           /* page background */
-  --ui-surface: #0f141b;      /* card/panel background */
-  --ui-surface-2: #131a22;    /* elevated/hover */
-  --ui-border: #1e2630;       /* borders */
-  --ui-text: #e6edf3;         /* primary text */
-  --ui-muted: #9aa5b1;        /* secondary text */
-  --ui-accent: #60a5fa;       /* accent (buttons, tabs) */
-  --ui-accent-contrast: #0b1220; /* contrast text on accent */
-  --ui-positive: #34d399;     /* success */
-  --ui-warning: #f59e0b;      /* warning */
-  --ui-danger: #f87171;       /* danger */
+  /* Tokyo Night inspired palette: mostly black + blues, subtle accent colors */
+  --ui-bg: #0b0d14;                 /* near-black background */
+  --ui-surface: #0f1623;            /* deep navy surface */
+  --ui-surface-2: #121b2c;          /* elevated surface */
+  --ui-surface-3: #0e1728;          /* highest elevation */
+  --ui-border: #1b2538;             /* cool border */
+  --ui-text: #c0caf5;               /* primary text (tokyonight) */
+  --ui-muted: #a9b1d6;              /* secondary text */
+  --ui-accent: #7aa2f7;             /* blue accent */
+  --ui-accent-contrast: #0b1220;    /* text on accent */
+  --ui-positive: #9ece6a;           /* green (subtle) */
+  --ui-warning: #e0af68;            /* amber */
+  --ui-danger: #f7768e;             /* red */
+}
+
+/* Dark theme + JetBrains Mono */
+:root{
+  /* Legacy variables mapped to the Tokyo Night palette for consistency */
+  --bg: var(--ui-bg);
+  --surface: var(--ui-surface);
+  --muted: var(--ui-muted);
+  --text: var(--ui-text);
+  --accent: var(--ui-accent);
+  --border: var(--ui-border);
+  --card: var(--ui-surface);
+}
+
+html,body,#__next {
+  height:100%;
 }
 
 body {
-  background-color: var(--ui-bg);
-  color: var(--ui-text);
+  margin:0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
 }
 
 /* Base form elements */
@@ -40,9 +61,73 @@ input:focus,
 textarea:focus,
 select:focus {
   outline: none;
-  box-shadow: 0 0 0 2px var(--ui-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-accent) 70%, transparent);
 }
 
 button {
   color: var(--ui-text);
+}
+
+/* Landing cards - one per row, large image placeholder */
+.alg-row {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  padding: 28px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(122,162,247,0.05), rgba(12,18,32,0.1));
+  border: 1px solid var(--border);
+  box-shadow: 0 6px 18px rgba(1,8,20,0.6);
+  margin-bottom: 24px;
+}
+
+/* Placeholder image box */
+.alg-image {
+  width: 360px;
+  height: 200px;
+  flex: 0 0 360px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(122,162,247,0.05), rgba(32,40,72,0.08));
+  border: 1px dashed rgba(192,202,245,0.06);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--muted);
+  font-size:14px;
+}
+
+/* Content */
+.alg-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.alg-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.alg-desc {
+  color: var(--muted);
+  margin-bottom: 16px;
+  line-height: 1.45;
+}
+
+/* Explore link */
+.alg-cta {
+  display:inline-block;
+  padding: 10px 14px;
+  background: var(--accent);
+  color: #021024;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration:none;
+}
+
+/* Make layout responsive */
+@media (max-width: 880px) {
+  .alg-row { flex-direction: column; align-items: stretch; }
+  .alg-image { width:100%; height:200px; flex:none; }
 }

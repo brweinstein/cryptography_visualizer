@@ -7,10 +7,18 @@ use serde::Serialize;
 mod util;
 mod number_theory;
 mod rsa;
+mod diffie_hellman;
+mod aes;
+mod sha256;
+mod discrete_log;
 
 use util::{biguint_to_string, parse_biguint, seeded_rng};
 use number_theory::{egcd_big, gcd_big, is_probable_prime, mod_inv_big, mod_pow_big, gen_prime_bits, lcm_big, phi_of_pq, lambda_of_pq};
 use rsa::generate_rsa_keypair_internal;
+use diffie_hellman::{generate_diffie_hellman_params, diffie_hellman_exchange_internal};
+use aes::aes_encrypt_with_visualization;
+use sha256::sha256_with_visualization;
+use discrete_log::{baby_step_giant_step, brute_force_discrete_log};
 
 fn pick_small_primes_in_range_internal(n_min: &BigUint, n_max: &BigUint) -> Option<(BigUint, BigUint, BigUint)> {
     let limit = 200u32;
@@ -304,5 +312,83 @@ pub fn decrypt(ciphertext: &str, d: &str, n: &str) -> String {
     let d = parse_biguint(d);
     let n = parse_biguint(n);
     biguint_to_string(&mod_pow_big(&c, &d, &n))
+}
+
+// Diffie-Hellman Key Exchange exports
+#[wasm_bindgen]
+pub fn generate_dh_params(bits: u32) -> JsValue {
+    let (p, g) = generate_diffie_hellman_params(bits);
+    #[derive(Serialize)]
+    struct DHParams { p: String, g: String }
+    let params = DHParams { 
+        p: biguint_to_string(&p), 
+        g: biguint_to_string(&g) 
+    };
+    serde_wasm_bindgen::to_value(&params).unwrap()
+}
+
+#[wasm_bindgen]
+pub fn dh_exchange(p: &str, g: &str, alice_private: &str, bob_private: &str) -> JsValue {
+    let p_big = parse_biguint(p);
+    let g_big = parse_biguint(g);
+    let a_big = parse_biguint(alice_private);
+    let b_big = parse_biguint(bob_private);
+    
+    let exchange = diffie_hellman_exchange_internal(&p_big, &g_big, &a_big, &b_big);
+    serde_wasm_bindgen::to_value(&exchange).unwrap()
+}
+
+// AES encryption exports
+#[wasm_bindgen]
+pub fn aes_encrypt_visualize(plaintext_hex: &str, key_hex: &str) -> JsValue {
+    // Parse hex strings to byte arrays
+    let plaintext = hex_to_bytes(plaintext_hex).unwrap_or([0u8; 16]);
+    let key = hex_to_bytes(key_hex).unwrap_or([0u8; 16]);
+    
+    let visualization = aes_encrypt_with_visualization(&plaintext, &key);
+    serde_wasm_bindgen::to_value(&visualization).unwrap()
+}
+
+// SHA-256 exports
+#[wasm_bindgen]
+pub fn sha256_visualize(message: &str) -> JsValue {
+    let message_bytes = message.as_bytes();
+    let visualization = sha256_with_visualization(message_bytes);
+    serde_wasm_bindgen::to_value(&visualization).unwrap()
+}
+
+// Discrete logarithm exports
+#[wasm_bindgen]
+pub fn discrete_log_brute_force(base: &str, target: &str, modulus: &str, max_steps: u32) -> JsValue {
+    let base_big = parse_biguint(base);
+    let target_big = parse_biguint(target);
+    let modulus_big = parse_biguint(modulus);
+    
+    let visualization = brute_force_discrete_log(&base_big, &target_big, &modulus_big, max_steps);
+    serde_wasm_bindgen::to_value(&visualization).unwrap()
+}
+
+#[wasm_bindgen]
+pub fn discrete_log_bsgs(base: &str, target: &str, modulus: &str, max_steps: u32) -> JsValue {
+    let base_big = parse_biguint(base);
+    let target_big = parse_biguint(target);
+    let modulus_big = parse_biguint(modulus);
+    
+    let visualization = baby_step_giant_step(&base_big, &target_big, &modulus_big, max_steps);
+    serde_wasm_bindgen::to_value(&visualization).unwrap()
+}
+
+// Helper function to convert hex string to byte array
+fn hex_to_bytes(hex: &str) -> Option<[u8; 16]> {
+    if hex.len() != 32 {
+        return None;
+    }
+    
+    let mut bytes = [0u8; 16];
+    for i in 0..16 {
+        let hex_pair = &hex[i * 2..(i + 1) * 2];
+        bytes[i] = u8::from_str_radix(hex_pair, 16).ok()?;
+    }
+    Some(bytes)
 }
 

@@ -54,6 +54,7 @@ temp/
 /target
 node_modules
 .next
+.github/
 out
 .vercel
 web/public/pkg

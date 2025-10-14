@@ -4,6 +4,85 @@
 
 export interface RsaKeyPair { p: string; q: string; n: string; e: string; d: string }
 
+export interface DiffieHellmanStep {
+  step: string;
+  description: string;
+  value: string;
+  computation: string;
+}
+
+export interface DiffieHellmanExchange {
+  p: string;
+  g: string;
+  alice_private: string;
+  bob_private: string;
+  alice_public: string;
+  bob_public: string;
+  alice_shared: string;
+  bob_shared: string;
+  steps: DiffieHellmanStep[];
+}
+
+export interface AESRoundState {
+  round: number;
+  step: string;
+  state: number[][];
+  description: string;
+  intermediate_values: string[];
+}
+
+export interface AESVisualization {
+  plaintext: number[];
+  key: number[];
+  ciphertext: number[];
+  rounds: AESRoundState[];
+}
+
+export interface SHA256Step {
+  step: number;
+  description: string;
+  a: number;
+  b: number;
+  c: number;
+  d: number;
+  e: number;
+  f: number;
+  g: number;
+  h: number;
+  w: number;
+  k: number;
+  temp1: number;
+  temp2: number;
+}
+
+export interface SHA256Visualization {
+  message: number[];
+  padded_message: number[];
+  hash: number[];
+  final_hash: string;
+  steps: SHA256Step[];
+}
+
+export interface DiscreteLogStep {
+  step: number;
+  method: string;
+  description: string;
+  current_value: string;
+  exponent: string;
+  found: boolean;
+}
+
+export interface DiscreteLogVisualization {
+  base: string;
+  target: string;
+  modulus: string;
+  solution: string | null;
+  steps: DiscreteLogStep[];
+  method_used: string;
+  warnings?: string[];
+  truncated?: boolean;
+}
+
 export interface WasmExports {
   generate_prime(bits: number): string;
   is_prime(n: string): boolean;
@@ -24,6 +103,14 @@ export interface WasmExports {
   big_to_text(n: string): string | undefined;
   choose_e_d(p: string, q: string, use_lambda: boolean, e_hint?: string): { e: string; d: string } | null;
   map_modexp(e: string, n: string, count: number): Uint32Array;
+  
+  // New crypto functions
+  generate_dh_params(bits: number): { p: string; g: string };
+  dh_exchange(p: string, g: string, alice_private: string, bob_private: string): DiffieHellmanExchange;
+  aes_encrypt_visualize(plaintext_hex: string, key_hex: string): AESVisualization;
+  sha256_visualize(message: string): SHA256Visualization;
+  discrete_log_brute_force(base: string, target: string, modulus: string, max_steps: number): DiscreteLogVisualization;
+  discrete_log_bsgs(base: string, target: string, modulus: string, max_steps: number): DiscreteLogVisualization;
 }
 
 function bi(s: string | number | bigint): bigint {
@@ -176,6 +263,117 @@ const devStub: WasmExports = {
     }
     return out;
   },
+  
+  // New crypto function stubs
+  generate_dh_params(bits: number): { p: string; g: string } {
+    // Simple stub - not cryptographically secure
+    return { p: "23", g: "5" };
+  },
+  
+  dh_exchange(p: string, g: string, alice_private: string, bob_private: string): DiffieHellmanExchange {
+    const P = bi(p), G = bi(g), a = bi(alice_private), b = bi(bob_private);
+    const A = modPow(G, a, P);
+    const B = modPow(G, b, P);
+    const sharedA = modPow(B, a, P);
+    const sharedB = modPow(A, b, P);
+    
+    return {
+      p, g,
+      alice_private, bob_private,
+      alice_public: A.toString(),
+      bob_public: B.toString(),
+      alice_shared: sharedA.toString(),
+      bob_shared: sharedB.toString(),
+      steps: [
+        { step: "1", description: "Alice computes public key", value: A.toString(), computation: `A = g^a mod p = ${g}^${alice_private} mod ${p}` },
+        { step: "2", description: "Bob computes public key", value: B.toString(), computation: `B = g^b mod p = ${g}^${bob_private} mod ${p}` },
+        { step: "3", description: "Alice computes shared secret", value: sharedA.toString(), computation: `K = B^a mod p = ${B}^${alice_private} mod ${p}` },
+        { step: "4", description: "Bob computes shared secret", value: sharedB.toString(), computation: `K = A^b mod p = ${A}^${bob_private} mod ${p}` },
+      ]
+    };
+  },
+  
+  aes_encrypt_visualize(plaintext_hex: string, key_hex: string): AESVisualization {
+    // Stub implementation
+    const plaintext = Array.from({length: 16}, (_, i) => i);
+    const key = Array.from({length: 16}, (_, i) => i + 16);
+    const ciphertext = plaintext.map(x => (x + 1) % 256);
+    
+    return {
+      plaintext,
+      key,
+      ciphertext,
+      rounds: [
+        {
+          round: 0,
+          step: "Initial State",
+          state: [[0,1,2,3],[4,5,6,7],[8,9,10,11],[12,13,14,15]],
+          description: "Initial plaintext arranged in 4x4 state matrix",
+          intermediate_values: ["Plaintext loaded into state matrix"]
+        }
+      ]
+    };
+  },
+  
+  sha256_visualize(message: string): SHA256Visualization {
+    // Simple stub - not real SHA-256
+    const messageBytes = Array.from(new TextEncoder().encode(message));
+    const paddedMessage = [...messageBytes, 0x80]; // Simple padding
+    
+    return {
+      message: messageBytes,
+      padded_message: paddedMessage,
+      hash: [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19],
+      final_hash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", // Empty string hash
+      steps: [
+        {
+          step: 0,
+          description: "Initialize working variables",
+          a: 0x6a09e667, b: 0xbb67ae85, c: 0x3c6ef372, d: 0xa54ff53a,
+          e: 0x510e527f, f: 0x9b05688c, g: 0x1f83d9ab, h: 0x5be0cd19,
+          w: 0, k: 0x428a2f98, temp1: 0, temp2: 0
+        }
+      ]
+    };
+  },
+  
+  discrete_log_brute_force(base: string, target: string, modulus: string, max_steps: number): DiscreteLogVisualization {
+    const G = bi(base), T = bi(target), P = bi(modulus);
+    const steps: DiscreteLogStep[] = [];
+    
+    for (let i = 0; i < Math.min(max_steps, 100); i++) {
+      const current = modPow(G, BigInt(i), P);
+      steps.push({
+        step: i,
+        method: "Brute Force",
+        description: `Trying exponent ${i}`,
+        current_value: current.toString(),
+        exponent: i.toString(),
+        found: current === T
+      });
+      
+      if (current === T) {
+        return {
+          base, target, modulus,
+          solution: i.toString(),
+          steps,
+          method_used: "Brute Force"
+        };
+      }
+    }
+    
+    return {
+      base, target, modulus,
+      solution: null,
+      steps,
+      method_used: "Brute Force (no solution found)"
+    };
+  },
+  
+  discrete_log_bsgs(base: string, target: string, modulus: string, max_steps: number): DiscreteLogVisualization {
+    // Stub - same as brute force for now
+    return devStub.discrete_log_brute_force(base, target, modulus, max_steps);
+  },
 };
 
 let wasmPromise: Promise<WasmExports> | null = null;
@@ -189,23 +387,32 @@ export function loadWasm(): Promise<WasmExports> {
     wasmPromise = (async () => {
       // Try to load real wasm-pack output from public/pkg. Works after running:
       //   wasm-pack build ./rust --target web --out-dir ./web/public/pkg --out-name rsa_wasm
-      try {
-        const wasmUrl = '/pkg/rsa_wasm_bg.wasm';
-        // Hint webpack to not try to bundle this path; let the browser load it at runtime.
-        const mod: any = await import(/* webpackIgnore: true */ '/pkg/rsa_wasm.js');
-        if (typeof mod?.default === 'function') {
-          await mod.default(wasmUrl);
+      // Only use dev stub if explicitly requested via env var. Default is to require real WASM.
+      const enableStub = typeof process !== 'undefined' && (process.env?.NEXT_PUBLIC_ENABLE_DEV_STUB === 'true');
+      if (!enableStub) {
+        try {
+          const wasmUrl = '/pkg/rsa_wasm_bg.wasm' as string;
+          // NOTE: Next typechecker can't resolve public assets with a literal specifier.
+          // Use a variable so TS treats it as `any` at type time; webpack will resolve at runtime.
+          const wasmJsPath = '/pkg/rsa_wasm.js' as unknown as string;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const mod = (await import(/* webpackIgnore: true */ (wasmJsPath as any))) as any;
+          if (typeof mod?.default === 'function') {
+            await mod.default(wasmUrl);
+          }
+          const real: Partial<WasmExports> = mod as WasmExports;
+          if (typeof real.rsa_keypair === 'function' && typeof real.mod_pow === 'function') {
+            return real as WasmExports;
+          }
+          console.warn('[wasm] Loaded module but missing expected exports; falling back to dev stub due to mis-match.');
+        } catch (err) {
+          // In production we should fail loudly so maintainers know to build the wasm package.
+          console.error('[wasm] Failed to load WASM from /pkg — ensure you built the Rust WASM package into web/public/pkg with wasm-pack. Falling back to dev stub. Error:', err);
         }
-        // After init, the named exports are available on the same module
-        const real: Partial<WasmExports> = mod as WasmExports;
-        // Basic sanity check
-        if (typeof real.rsa_keypair === 'function' && typeof real.mod_pow === 'function') {
-          return real as WasmExports;
-        }
-        console.warn('[wasm] Loaded module but missing expected exports; falling back to dev stub.');
-      } catch (err) {
-        console.warn('[wasm] Could not load real wasm module, using dev stub instead.', err);
+      } else {
+        console.warn('[wasm] NEXT_PUBLIC_ENABLE_DEV_STUB=true — using JS dev stub for crypto math.');
       }
+      // Last resort: return the dev stub (only used when env var explicitly allows it or load failed).
       return devStub;
     })();
   }
