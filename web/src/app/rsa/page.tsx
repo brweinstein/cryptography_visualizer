@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { loadWasm, WasmExports } from '../../lib/wasm';
 import { Navigation } from '../../components/Navigation';
 import PrimesPanel from '../../components/panels/PrimesPanel';
@@ -100,7 +100,10 @@ export default function RSAPage() {
     let mounted = true;
     loadWasm()
       .then((mod) => { if (!mounted) return; setW(mod); setStatus('Ready'); })
-      .catch((err) => { console.error(err); setStatus('Using JS stub.'); });
+      .catch((err) => {
+        console.error('[WASM] load failed:', err);
+        setStatus('WASM load failed — using minimal JS fallback for prime checks');
+      });
     return () => { mounted = false; };
   }, []);
 
@@ -111,6 +114,30 @@ export default function RSAPage() {
   // Helpers
   const isReady = !!w;
   const canKeyFromPQ = Boolean(p && q && p !== q && w?.is_prime(p) && w?.is_prime(q));
+
+  // Robust prime check: use WASM when available, otherwise JS fallback.
+  const isPrime = useCallback((v: string): boolean => {
+    const s = (v ?? '').trim();
+    if (!/^[0-9]+$/.test(s)) return false;
+    // Prefer WASM if loaded
+    try {
+      if (w && typeof w.is_prime === 'function') {
+        return !!w.is_prime(s);
+      }
+    } catch {}
+    // JS fallback (trial division) while WASM loads
+    try {
+      const N = BigInt(s);
+      if (N < 2n) return false;
+      if (N % 2n === 0n) return N === 2n;
+      for (let i = 3n; i * i <= N; i += 2n) {
+        if (N % i === 0n) return false;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }, [w]);
 
   // Derive n and (optionally) e,d when p,q or totient choice changes.
   useEffect(() => {
@@ -303,8 +330,8 @@ export default function RSAPage() {
         nMin={nMin} nMax={nMax}
   setNMin={(v)=>setNMin(v)}
   setNMax={(v)=>setNMax(v)}
-        onAuto={autoGenerate}
-        isPrime={(v)=>!!w?.is_prime(v)}
+  onAuto={autoGenerate}
+  isPrime={isPrime}
         twoLineCap={twoLineCap}
         collapsible
         collapsed={collapsePrimes}

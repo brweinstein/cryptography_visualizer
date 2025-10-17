@@ -9,9 +9,9 @@ const imageSrc = (id: string) => `/images/${id}.png`;
 
 const algorithms = [
   { id: 'rsa', title: 'RSA Encryption', desc: 'Visualize RSA key generation and modular exponentiation.', href: '/rsa' },
-  { id: 'dh', title: 'Diffie–Hellman Key Exchange', desc: 'Interactive Diffie–Hellman key exchange protocol.', href: '/diffie-hellman' },
+  { id: 'dh', title: 'Diffie-Hellman Key Exchange', desc: 'Interactive Diffie-Hellman key exchange protocol.', href: '/diffie-hellman' },
   { id: 'aes', title: 'AES Round Visualization', desc: 'Step-by-step AES round visualization.', href: '/aes' },
-  { id: 'sha256', title: 'SHA‑256 (Hash)', desc: 'Visualize the SHA‑256 compression and message schedule.', href: '/sha256' },
+  { id: 'sha256', title: 'SHA-256 (Hash)', desc: 'Visualize the SHA-256 compression and message schedule.', href: '/sha256' },
   { id: 'dlog', title: 'Discrete Log Visualization', desc: 'Explore discrete logs and baby-step giant-step.', href: '/discrete-log' },
 ];
 

@@ -378,42 +378,20 @@ const devStub: WasmExports = {
 
 let wasmPromise: Promise<WasmExports> | null = null;
 
-/**
- * Load the WASM module built from the Rust crate. While we haven't packaged the
- * wasm yet, we return a dev stub that mimics the same API for UI prototyping.
- */
-export function loadWasm(): Promise<WasmExports> {
+// Simplified loader: import the module directly from the public path.
+export async function loadWasm(): Promise<WasmExports> {
   if (!wasmPromise) {
     wasmPromise = (async () => {
-      // Try to load real wasm-pack output from public/pkg. Works after running:
-      //   wasm-pack build ./rust --target web --out-dir ./web/public/pkg --out-name rsa_wasm
-      // Only use dev stub if explicitly requested via env var. Default is to require real WASM.
-      const enableStub = typeof process !== 'undefined' && (process.env?.NEXT_PUBLIC_ENABLE_DEV_STUB === 'true');
-      if (!enableStub) {
-        try {
-          const wasmUrl = '/pkg/rsa_wasm_bg.wasm' as string;
-          // NOTE: Next typechecker can't resolve public assets with a literal specifier.
-          // Use a variable so TS treats it as `any` at type time; webpack will resolve at runtime.
-          const wasmJsPath = '/pkg/rsa_wasm.js' as unknown as string;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const mod = (await import(/* webpackIgnore: true */ (wasmJsPath as any))) as any;
-          if (typeof mod?.default === 'function') {
-            await mod.default(wasmUrl);
-          }
-          const real: Partial<WasmExports> = mod as WasmExports;
-          if (typeof real.rsa_keypair === 'function' && typeof real.mod_pow === 'function') {
-            return real as WasmExports;
-          }
-          console.warn('[wasm] Loaded module but missing expected exports; falling back to dev stub due to mis-match.');
-        } catch (err) {
-          // In production we should fail loudly so maintainers know to build the wasm package.
-          console.error('[wasm] Failed to load WASM from /pkg — ensure you built the Rust WASM package into web/public/pkg with wasm-pack. Falling back to dev stub. Error:', err);
-        }
-      } else {
-        console.warn('[wasm] NEXT_PUBLIC_ENABLE_DEV_STUB=true — using JS dev stub for crypto math.');
+      // This import path maps to web/public/pkg at runtime in Next.js
+      // Ensure you have run the wasm:build script so rsa_wasm.js and rsa_wasm_bg.wasm exist.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const wasmJsPath: any = '/pkg/crypto_wasm.js';
+      // Tell webpack to ignore bundling this and load it at runtime from the public URL
+      const mod: any = await import(/* webpackIgnore: true */ (wasmJsPath as any));
+      if (typeof mod?.default === 'function') {
+        await mod.default({ module_or_path: '/pkg/crypto_wasm_bg.wasm' });
       }
-      // Last resort: return the dev stub (only used when env var explicitly allows it or load failed).
-      return devStub;
+      return mod as WasmExports;
     })();
   }
   return wasmPromise;
