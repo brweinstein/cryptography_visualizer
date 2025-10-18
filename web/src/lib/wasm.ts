@@ -1,4 +1,3 @@
-/// <reference path="../types/wasm-pack.d.ts" />
 // WASM loader with typed bindings. Currently provides a dev-stub implementation
 // so the app can run before we wire the actual wasm-pack output.
 
