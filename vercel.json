@@ -1,6 +1,7 @@
 {
   "version": 2,
   "framework": "nextjs",
+  "rootDirectory": "web",
   "buildCommand": "bash ./vercel-build.sh",
   "outputDirectory": ".next"
 }
