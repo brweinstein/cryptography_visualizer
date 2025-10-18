@@ -1,6 +1,6 @@
 {
   "version": 2,
   "framework": "nextjs",
-  "buildCommand": "curl https://sh.rustup.rs -sSf | sh -s -- -y && export PATH=\"$HOME/.cargo/bin:$PATH\" && cargo install wasm-pack && cd ../rust && wasm-pack build --target web --out-dir ../web/public/pkg --out-name crypto_wasm && cd ../web && npm run build",
+  "buildCommand": "export HOME=/root RUSTUP_HOME=/root/.rustup CARGO_HOME=/root/.cargo && curl https://sh.rustup.rs -sSf | sh -s -- -y --profile minimal --default-toolchain stable && export PATH=\"$CARGO_HOME/bin:$PATH\" && cargo install wasm-pack --version 0.12.1 && cd ../rust && wasm-pack build --target web --out-dir ../web/public/pkg --out-name crypto_wasm && cd ../web && npm run build",
   "outputDirectory": ".next"
 }
